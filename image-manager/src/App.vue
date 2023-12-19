@@ -4,6 +4,13 @@
     <div class="row mb-3">
       <div class="col">
         <input type="text" class="form-control" placeholder="搜索图片..." v-model="search" />
+        <button class="btn btn-primary mr-2" @click="showUpload = true">上传</button>
+        <button class="btn btn-danger" @click="deleteSelectedImages" :disabled="!selectedImages.length">删除选中</button>
+      </div>
+    </div>
+    <div class="row" v-if="showUpload">
+      <div class="col-12">
+        <ImageUpload @image-uploaded="handleImageUploaded" />
       </div>
     </div>
     <div class="row">
@@ -39,6 +46,7 @@
 
 <script>
 import ImageUpload from './components/ImageUpload.vue';
+import axios from 'axios';
 
 export default {
   name: 'App',
@@ -47,6 +55,8 @@ export default {
   },
   data() {
     return {
+      showUpload: true,  // 控制是否显示上传组件
+      selectedImages: [],  // 用于存储选中的图片
       search: '',
       images: [
         { name: '截图jietu01', url: '/img/123.png' },
@@ -64,10 +74,32 @@ export default {
     }
   },
   methods: {
+    handleImageUploaded(uploadedImage) {
+      this.images.push(uploadedImage); // 假设uploadedImage是包含name和url的对象
+      this.showUpload = false;  // 上传后隐藏上传组件
+    },
+    deleteSelectedImages() {
+      if (!this.selectedImages.length) {
+        alert('请选择要删除的图片');
+        return;
+      }
+
+      const selectedNames = this.selectedImages.map(image => image.name);
+      axios.post('/delete-image', { names: selectedNames })
+        .then(() => {
+          this.images = this.images.filter(image => !selectedNames.includes(image.name));
+          this.selectedImages = [];
+        })
+        .catch(error => {
+          console.error('删除失败:', error);
+        });
+    },
     selectImage(image) {
-      this.selectedImage = image;
-    }
-  }
+      this.selectedImage = image; // 确保你有一个data属性叫selectedImage
+    },
+    // ...可能的其他方法
+  },
+  // ...其他选项
 }
 </script>
 

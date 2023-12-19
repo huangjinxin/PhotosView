@@ -1,8 +1,9 @@
 <template>
     <div>
       <ul>
-        <li v-for="image in images" :key="image">
-          <img :src="image" @click="selectImage(image)" />
+        <li v-for="image in images" :key="image.name">
+          {{ image.name }}
+          <button @click="deleteImage(image)">删除</button>
         </li>
       </ul>
     </div>
@@ -10,24 +11,16 @@
   
   <script>
   export default {
-    name: 'ImageList',
-    data() {
-      return {
-        images: [], // 图片数组，存储图片的URL
-      };
-    },
     methods: {
-      selectImage(image) {
-        // 选中图片的处理逻辑
-        console.log("Image selected: ", image);
-      },
-      fetchImages() {
-        // 获取图片列表的逻辑
-        // 这里需要实现从后端API获取图片列表的逻辑
+      deleteImage(image) {
+        // 调用后端API删除图片
+        axios.delete(`/delete-image/${image.name}`).then(response => {
+          // 删除成功，发出事件或调用Vuex action来更新列表
+          this.$emit('image-deleted', image);
+        }).catch(error => {
+          console.error('Delete failed!', error);
+        });
       }
-    },
-    mounted() {
-      this.fetchImages();
     }
   }
   </script>

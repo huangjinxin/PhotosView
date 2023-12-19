@@ -1,22 +1,36 @@
-<script>
-import 'dropzone/dist/dropzone.css';
-import Dropzone from 'dropzone';
+<template>
+    <div class="upload-container">
+      <form @submit.prevent="submitForm" class="dropzone" id="image-dropzone">
+        <input type="file" name="file" @change="handleFileUpload" />
+        <button type="submit">上传图片</button>
+      </form>
+    </div>
+  </template>
+  
+  <script>
+import axios from 'axios';
 
 export default {
-  name: 'ImageUpload',
-  mounted() {
-    // 直接创建Dropzone实例，无需赋值给变量
-    new Dropzone("#image-dropzone", {
-      url: "/upload",
-      maxFilesize: 2, // 设置最大文件上传大小为2MB
-      acceptedFiles: 'image/*', // 只接受图片文件
-      init: function() {
-        this.on("success", function(file, response) {
-          // 上传成功后的回调函数
-          console.log("File uploaded: ", response);
-        });
-      }
-    });
+  methods: {
+    handleFileUpload(event) {
+      this.file = event.target.files[0];
+    },
+    submitForm() {
+      let formData = new FormData();
+      formData.append('file', this.file);
+
+      axios.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(response => {
+        this.$emit('image-uploaded', response.data);
+      })
+      .catch(error => {
+        console.error('There was an error!', error);
+      });
+    }
   }
 }
 </script>
